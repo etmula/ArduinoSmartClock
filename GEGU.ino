@@ -30,6 +30,8 @@ WidgetRTC rtc;
 TM1638plus tm(STROBE_TM, CLOCK_TM , DIO_TM);
 //display time like " 00  00 "
 void displayTime(TM1638plus device, int ho, int mi);
+//display date like "19-09-23"
+void displayDate(TM1638plus device, int ye, int mo, int da);
 //overwrite all data to viretualPin
 void virtualwrite();
 void setup()
@@ -59,6 +61,17 @@ void displayTime(TM1638plus device, int ho, int mi){
   tm.displayASCII(5,buf[2]);
   tm.displayASCII(6,buf[3]);
   tm.display7Seg(7,0);
+}
+void displayDate(TM1638plus device, int ye, int mo, int da){
+  sprintf(&buf[0],"%04d%02d%02d",ye,mo,da);
+  tm.displayASCII(0,buf[2]);
+  tm.displayASCII(1,buf[3]);
+  tm.displayASCII(2,0b0101101);
+  tm.displayASCII(3,buf[4]);
+  tm.displayASCII(4,buf[5]);
+  tm.displayASCII(5,0b0101101);
+  tm.displayASCII(6,buf[6]);
+  tm.displayASCII(7,buf[7]);
 }
 void virtualwrite(){
   Blynk.virtualWrite(V0,data[0]);
