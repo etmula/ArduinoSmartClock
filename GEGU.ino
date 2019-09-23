@@ -28,6 +28,8 @@ WidgetRTC rtc;
 
 //Constructor object
 TM1638plus tm(STROBE_TM, CLOCK_TM , DIO_TM);
+//display time like " 00  00 "
+void displayTime(TM1638plus device, int ho, int mi);
 //overwrite all data to viretualPin
 void virtualwrite();
 void setup()
@@ -46,6 +48,17 @@ void loop()
 BLYNK_CONNECTED() {
   // Synchronize time on connection
   rtc.begin();
+}
+void displayTime(TM1638plus device, int ho, int mi){
+  sprintf(&buf[0],"%02d%02d", hour(), minute());
+  tm.display7Seg(0,0);
+  tm.displayASCII(1,buf[0]);
+  tm.displayASCII(2,buf[1]);
+  tm.display7Seg(3,0);
+  tm.display7Seg(4,0);
+  tm.displayASCII(5,buf[2]);
+  tm.displayASCII(6,buf[3]);
+  tm.display7Seg(7,0);
 }
 void virtualwrite(){
   Blynk.virtualWrite(V0,data[0]);
