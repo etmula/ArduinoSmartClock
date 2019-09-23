@@ -28,6 +28,7 @@ WidgetRTC rtc;
 
 //Constructor object
 TM1638plus tm(STROBE_TM, CLOCK_TM , DIO_TM);
+void datestamp(int buttonNo);
 //display time like " 00  00 "
 void displayTime(TM1638plus device, int ho, int mi);
 //display date like "19-09-23"
@@ -50,6 +51,31 @@ void loop()
 BLYNK_CONNECTED() {
   // Synchronize time on connection
   rtc.begin();
+}
+
+void datestamp(TM1638plus device, int buttonNo){
+  displayDate(device, year(data[buttonNo].toInt()), month(data[buttonNo].toInt()), day(data[buttonNo].toInt()));
+  
+  //ボタンが離されるまで待機
+  while(device.readButtons() != 0){delay(1);}
+  
+  unsigned long timer = millis();
+  while(1){
+    delay(1);
+    uint8_t value = device.readButtons();
+    if(value == uint8_t(pow(2, buttonNo))){
+      data[buttonNo] = String(now());
+      virtualwrite();
+      displayDate(device, year(), month(), day());
+      delay(3000);
+      device.reset();
+      return;
+    }else if(millis() - timer > 5000 || value != 0){
+      device.reset();
+      return;
+    }
+  }
+    
 }
 void displayTime(TM1638plus device, int ho, int mi){
   sprintf(&buf[0],"%02d%02d", hour(), minute());
