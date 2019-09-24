@@ -42,6 +42,8 @@ void datestampMode(int buttonNo);
 void displayTime(TM1638plus device, int ho, int mi);
 //display date like "19-09-23"
 void displayDate(TM1638plus device, int ye, int mo, int da);
+//display string last 8 charactors
+void displayString(TM1638plus device,String text);
 //overwrite all data to viretualPin
 void virtualwrite();
 void setup()
@@ -161,6 +163,19 @@ void displayDate(TM1638plus device, int ye, int mo, int da){
   tm.displayASCII(6,buf[6]);
   tm.displayASCII(7,buf[7]);
 }
+
+void displayString(TM1638plus device,String text){
+  for(int i = 0;i < 8;i++){
+    if(i < text.length()){
+      device.displayASCII(7 - i,text[text.length() - (i + 1)]);
+    }else{
+      device.display7Seg(7 - i,0);
+    }
+  }
+}
+
+
+
 void virtualwrite(){
   Blynk.virtualWrite(V0,data[0]);
   Blynk.virtualWrite(V1,data[1]);
