@@ -37,6 +37,7 @@ TM1638plus tm(STROBE_TM, CLOCK_TM , DIO_TM);
 //functions
 void emailsendMode(int buttonNo);
 void randomMode(TM1638plus device);
+void informationdisplayMode(int buttonNo);
 void datestampMode(int buttonNo);
 //display time like " 00  00 "
 void displayTime(TM1638plus device, int ho, int mi);
@@ -84,6 +85,47 @@ void randomMode(TM1638plus device){
   }
   while(device.readButtons() == 0){delay(1);}
 }
+
+
+void informationdisplayMode(TM1638plus device, int buttonNo){
+  int displayno = 0;
+  int timer = millis();
+  String info_data[4] = {data[10], data[11], data[12], data[13]};
+  //display info select menu
+  tm.reset();
+  for(int i = 0;i < sizeof(info_data)/sizeof(String);i++){
+    if(i != displayno) device.display7Seg(i,0b01011100);
+    else  device.display7Seg(i,0b01100011);
+  }
+  //Wait until the button is released
+  while(device.readButtons() != 0){delay(1);}
+  
+  while(1){
+    if(device.readButtons() == uint8_t(pow(2, buttonNo))){
+      //displayno setting
+      displayno = ++displayno % sizeof(info_data)/sizeof(String);
+      //display like ooPo
+      for(int i = 0;i < sizeof(info_data)/sizeof(String);i++){
+        if(i != displayno) device.display7Seg(i,0b01011100);
+        else  device.display7Seg(i,0b01100011);
+      }
+      //Wait until the button is released
+      while(device.readButtons() != 0){delay(1);}
+      //timer reset
+      timer = millis();
+    //display info
+    }else if(millis() > timer + 2 * 1000){
+      displayString(device,info_data[displayno]);
+    //finish
+    }else if(millis() > timer + 7 * 1000){
+      return;
+    }
+    delay(1);
+  }
+}
+
+
+
 void emailsendMode(TM1638plus device, int buttonNo){
   tm.reset();
   //display like E3
