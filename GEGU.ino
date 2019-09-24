@@ -20,14 +20,22 @@
 #define  STROBE_TM D5
 #define  CLOCK_TM D6
 #define  DIO_TM D7
+
+
 //values
+char buf[100];
 //viretualPin data[PinNo]
 String data[40];
+int random_temp = random(10);
+
 //RTC
 WidgetRTC rtc;
 
 //Constructor object
 TM1638plus tm(STROBE_TM, CLOCK_TM , DIO_TM);
+
+//functions
+void emailsendMode(int buttonNo);
 void randomMode(TM1638plus device);
 void datestampMode(int buttonNo);
 //display time like " 00  00 "
@@ -74,6 +82,40 @@ void randomMode(TM1638plus device){
   }
   while(device.readButtons() == 0){delay(1);}
 }
+void emailsendMode(TM1638plus device, int buttonNo){
+  tm.reset();
+  //display like E3
+  tm.display7Seg(1,0b01111001);
+  tm.display7Seg(2,0b01001111);
+  while(device.readButtons() != 0){delay(1);}
+  unsigned long timer = millis();
+  while(1){
+    delay(1);
+    //pushed Button again 
+    if(device.readButtons() == uint8_t(pow(2, buttonNo))){
+      data[buttonNo] = String(now());
+      virtualwrite();
+      //send email
+      Blynk.email("{DEVICE_OWNER_EMAIL}","{DEVICE_NAME}#GEGU","This mail was sent by {DEVICE_NAME}.");
+      //animate sending email
+      for(int i = 1;i < 7;i++){
+        device.reset();
+        device.display7Seg(i,0b01111001);
+        device.display7Seg(i + 1,0b01001111);
+        delay(300);
+      }
+      device.reset();
+      return;
+    //pushed other button or timeout
+    }else if(millis() - timer > 5000 || value != 0){
+      device.reset();
+      return;
+    }
+  }
+}
+
+
+void datestampMode(TM1638plus device, int buttonNo){
   displayDate(device, year(data[buttonNo].toInt()), month(data[buttonNo].toInt()), day(data[buttonNo].toInt()));
   
   //ボタンが離されるまで待機
