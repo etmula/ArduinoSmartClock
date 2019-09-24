@@ -28,7 +28,8 @@ WidgetRTC rtc;
 
 //Constructor object
 TM1638plus tm(STROBE_TM, CLOCK_TM , DIO_TM);
-void datestamp(int buttonNo);
+void randomMode(TM1638plus device);
+void datestampMode(int buttonNo);
 //display time like " 00  00 "
 void displayTime(TM1638plus device, int ho, int mi);
 //display date like "19-09-23"
@@ -53,7 +54,26 @@ BLYNK_CONNECTED() {
   rtc.begin();
 }
 
-void datestamp(TM1638plus device, int buttonNo){
+void randomMode(TM1638plus device){
+  while(device.readButtons() != 0){
+    device.displayASCII(0,random(48,58));
+    device.displayASCII(1,random(48,58));
+    device.displayASCII(2,random(48,58));
+    device.displayASCII(3,random(48,58));
+    device.displayASCII(4,random(48,58));
+    device.displayASCII(5,random(48,58));
+    device.displayASCII(6,random(48,58));
+    device.displayASCII(7,random(48,58));
+    delay(100);
+  }
+  randomSeed(now());
+  device.reset();
+  for(int i = 7;i >= 0;i--){
+    device.displayASCII(i,random(48,58));
+    delay(100);
+  }
+  while(device.readButtons() == 0){delay(1);}
+}
   displayDate(device, year(data[buttonNo].toInt()), month(data[buttonNo].toInt()), day(data[buttonNo].toInt()));
   
   //ボタンが離されるまで待機
