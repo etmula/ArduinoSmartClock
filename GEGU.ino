@@ -103,11 +103,18 @@ void informationdisplayMode(TM1638plus device, int buttonNo){
   while(1){
     if(device.readButtons() == uint8_t(pow(2, buttonNo))){
       //displayno setting
-      displayno = ++displayno % sizeof(info_data)/sizeof(String);
+      displayno++;
+      if(displayno ==  sizeof(info_data)/sizeof(String)){
+        displayno = 0;
+      }
       //display like ooPo
-      for(int i = 0;i < sizeof(info_data)/sizeof(String);i++){
+      for(int i = 0;i < 8;i++){
+        if(i < sizeof(info_data)/sizeof(String)){
         if(i != displayno) device.display7Seg(i,0b01011100);
         else  device.display7Seg(i,0b01100011);
+        }else{
+          device.display7Seg(i,0);
+      }
       }
       //Wait until the button is released
       while(device.readButtons() != 0){delay(1);}
@@ -117,7 +124,9 @@ void informationdisplayMode(TM1638plus device, int buttonNo){
     }else if(millis() > timer + 2 * 1000){
       displayString(device,info_data[displayno]);
     //finish
-    }else if(millis() > timer + 7 * 1000){
+    }
+    if(millis() > timer + 15 * 1000 || 
+            (device.readButtons() != uint8_t(pow(2, buttonNo)) && device.readButtons() != 0)){
       return;
     }
     delay(1);
@@ -131,6 +140,7 @@ void emailsendMode(TM1638plus device, int buttonNo){
   //display like E3
   tm.display7Seg(1,0b01111001);
   tm.display7Seg(2,0b01001111);
+  //Wait until the button is released
   while(device.readButtons() != 0){delay(1);}
   unsigned long timer = millis();
   while(1){
@@ -151,7 +161,7 @@ void emailsendMode(TM1638plus device, int buttonNo){
       device.reset();
       return;
     //pushed other button or timeout
-    }else if(millis() - timer > 5000 || value != 0){
+    }else if(millis() - timer > 5000 || tm.readButtons() != 0){
       device.reset();
       return;
     }
@@ -194,6 +204,7 @@ void displayTime(TM1638plus device, int ho, int mi){
   tm.displayASCII(6,buf[3]);
   tm.display7Seg(7,0);
 }
+
 void displayDate(TM1638plus device, int ye, int mo, int da){
   sprintf(&buf[0],"%04d%02d%02d",ye,mo,da);
   tm.displayASCII(0,buf[2]);
