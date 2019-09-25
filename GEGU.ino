@@ -39,6 +39,8 @@ void emailsendMode(int buttonNo);
 void randomMode(TM1638plus device);
 void informationdisplayMode(int buttonNo);
 void datestampMode(int buttonNo);
+//display LED when not Birthday
+void displayLED(TM1638plus device);
 //display time like " 00  00 "
 void displayTime(TM1638plus device, int ho, int mi);
 //display date like "19-09-23"
@@ -63,6 +65,8 @@ void loop()
 BLYNK_CONNECTED() {
   // Synchronize time on connection
   rtc.begin();
+  Blynk.syncVirtual(V0, V1, V2, V3, V4, V5, V6, V7, V10, V11, V12, V13, V20, V21, V22, V35, V36, V37);
+  
 }
 
 void randomMode(TM1638plus device){
@@ -172,7 +176,7 @@ void emailsendMode(TM1638plus device, int buttonNo){
 void datestampMode(TM1638plus device, int buttonNo){
   displayDate(device, year(data[buttonNo].toInt()), month(data[buttonNo].toInt()), day(data[buttonNo].toInt()));
   
-  //ボタンが離されるまで待機
+  //Wait until the button is released
   while(device.readButtons() != 0){delay(1);}
   
   unsigned long timer = millis();
@@ -193,6 +197,43 @@ void datestampMode(TM1638plus device, int buttonNo){
   }
     
 }
+
+void displayLED(TM1638plus device){
+  device.setLED(0, now() > (data[0].toInt() + 1 * 60*60*24 - data[0].toInt() % 60*60*24));
+  device.setLED(1, now() > (data[1].toInt() + 7 * 60*60*24 - data[1].toInt() % 60*60*24));
+  device.setLED(2, now() > (data[2].toInt() + 30 * 60*60*24 - data[2].toInt() % 60*60*24));
+  device.setLED(3, now() > (data[3].toInt() + 30 * 60*60*24 - data[3].toInt() % 60*60*24));
+  if(now() < data[30].toInt() + 5 * 60*60){
+    if(data[30].toInt() + 10 * 60){
+      device.setLED(4, millis() % 1000 < 500);
+    }else{
+      device.setLED(4, true);
+    }
+  }
+  if(now() < data[31].toInt() + 5 * 60*60){
+    if(data[30].toInt() + 10 * 60){
+      device.setLED(5, millis() % 1000 < 500);
+    }else{
+      device.setLED(5,true);
+    }
+  }
+  if(now() < data[32].toInt() + 5 * 60*60){
+    if(data[30].toInt() + 10 * 60){
+      device.setLED(6, millis() % 1000 < 500);
+    }else{
+      device.setLED(6,true);
+    }
+  }
+  if(data[13].toInt() >= 3){
+    if(data[13].toInt() >= 6){
+      tm.setLED(7, millis() % 1000 < 500);
+    }else{
+      tm.setLED(7,true);
+    }
+    
+  }
+}
+
 void displayTime(TM1638plus device, int ho, int mi){
   sprintf(&buf[0],"%02d%02d", hour(), minute());
   tm.display7Seg(0,0);
