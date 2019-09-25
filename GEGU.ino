@@ -17,6 +17,7 @@
 //const char *family[familyNo]
 #include "local_settings.h"
 
+//settings
 #define  STROBE_TM D5
 #define  CLOCK_TM D6
 #define  DIO_TM D7
@@ -37,6 +38,7 @@ TM1638plus tm(STROBE_TM, CLOCK_TM , DIO_TM);
 //functions
 void emailsendMode(int buttonNo);
 void randomMode(TM1638plus device);
+void birthdayIlluminate(TM1638plus device, unsigned long mil, int familyNo);
 void informationdisplayMode(int buttonNo);
 void datestampMode(int buttonNo);
 //display LED when not Birthday
@@ -49,6 +51,7 @@ void displayDate(TM1638plus device, int ye, int mo, int da);
 void displayString(TM1638plus device,String text);
 //overwrite all data to viretualPin
 void virtualwrite();
+
 void setup()
 {
 
@@ -89,6 +92,38 @@ void randomMode(TM1638plus device){
   }
   while(device.readButtons() == 0){delay(1);}
 }
+
+
+void birthdayIlluminate(TM1638plus device, unsigned long mil, int familyNo){
+  int firework_frequency = 10000;
+  int firework_speed = 100;
+  
+//LED firework
+  if(random_temp * int(firework_frequency / 10) < mil % firework_frequency   &&   mil % firework_frequency < random_temp * int(firework_frequency / 10) + 1000){
+    for(int i = 0;i < 4;i++){
+      bool isOn = i * firework_speed < mil % 1000  &&  mil % 1000 < (i + 1) * firework_speed;
+      device.setLED(4 + i, isOn);
+      device.setLED(3 - i, isOn);
+    }
+  }else{
+    displayLED(device);
+  }
+    //ランダムリセット
+  if(mil % 10000 > random_temp * 1000 + 990){random_temp = random(10);}
+  
+//birthday message
+  if(mil % 10000 >9000){
+    device.displayText(family[familyNo]);
+  }else if(mil % 10000 > 8000){
+    device.displayText("birthdAy");
+  }else if(mil % 10000 > 7000){
+    device.displayText(" HAPPY  ");
+  }else{
+    displayTime(device, hour(), minute());
+  }
+  
+}
+
 
 
 void informationdisplayMode(TM1638plus device, int buttonNo){
