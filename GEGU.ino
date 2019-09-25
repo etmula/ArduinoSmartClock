@@ -60,7 +60,30 @@ void setup()
 
   Blynk.begin(auth, ssid, pass);
   tm.reset();
+  
+
+//Start-Up
+  tm.brightness(0);
+  tm.displayText("  GEGU  ");
+  for(int j = 0;j < 3;j++){
+    tm.reset();
+    delay(300);
+    tm.displayText("  GEGU  ");
+    for(int i = 0;i < 8;i++){
+      tm.brightness(i);
+      delay(100);
+    }
+  }
+  for(uint8_t timer = 0; timer < 4;timer++){
+    tm.setLED(3 - timer,true);
+    tm.setLED(4 + timer,true);
+    delay(300);
 }
+  tm.reset();
+}
+
+
+
 void loop()
 {
   Blynk.run();
