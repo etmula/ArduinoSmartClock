@@ -37,6 +37,7 @@ TM1638plus tm(STROBE_TM, CLOCK_TM , DIO_TM);
 
 //functions
 void emailsendMode(int buttonNo);
+void systems();
 void randomMode(TM1638plus device);
 void birthdayIlluminate(TM1638plus device, unsigned long mil, int familyNo);
 void informationdisplayMode(int buttonNo);
@@ -54,7 +55,7 @@ void virtualwrite();
 
 void setup()
 {
-
+  
   // Debug console
   Serial.begin(9600);
 
@@ -78,7 +79,7 @@ void setup()
     tm.setLED(3 - timer,true);
     tm.setLED(4 + timer,true);
     delay(300);
-}
+  }
   tm.reset();
 }
 
@@ -87,12 +88,62 @@ void setup()
 void loop()
 {
   Blynk.run();
+  systems();
 }
+
 BLYNK_CONNECTED() {
   // Synchronize time on connection
   rtc.begin();
   Blynk.syncVirtual(V0, V1, V2, V3, V4, V5, V6, V7, V10, V11, V12, V13, V20, V21, V22, V35, V36, V37);
   
+}
+
+
+void systems(){
+  for(int i = 0;i < sizeof(birthdays[0])/sizeof(int);i++){
+    if(month() == birthdays[0][i]){
+      if(day() == birthdays[1][i]){
+        birthdayIlluminate(tm, millis(), i);
+        break;
+      }
+    }
+    if(i == sizeof(birthdays[0])/sizeof(int) - 1  ){
+      displayTime(tm, hour(), minute());
+      displayLED(tm);
+    }
+  }
+  
+  if(tm.readButtons() != 0){
+    switch(tm.readButtons()){
+      case 1:
+        datestampMode(tm, 0);
+        break;
+      case 2:
+        datestampMode(tm, 1);
+        break;
+      case 4:
+        datestampMode(tm, 2);
+        break;
+      case 8:
+        datestampMode(tm, 3);
+        break;
+      case 16:
+        informationdisplayMode(tm, 4);
+        break;
+      case 32:
+        randomMode(tm);
+        break;
+      case 64:
+        emailsendMode(tm, 6);
+        break;
+      case 128:
+        displayDate(tm, year(), month(), day());
+        break;
+      default:
+        break;
+    }
+    while(tm.readButtons() != 0){delay(1);}
+  }
 }
 
 void randomMode(TM1638plus device){
@@ -172,11 +223,11 @@ void informationdisplayMode(TM1638plus device, int buttonNo){
       //display like ooPo
       for(int i = 0;i < 8;i++){
         if(i < sizeof(info_data)/sizeof(String)){
-        if(i != displayno) device.display7Seg(i,0b01011100);
-        else  device.display7Seg(i,0b01100011);
+          if(i != displayno) device.display7Seg(i,0b01011100);
+          else  device.display7Seg(i,0b01100011);
         }else{
           device.display7Seg(i,0);
-      }
+        }
       }
       //Wait until the button is released
       while(device.readButtons() != 0){delay(1);}
@@ -318,13 +369,13 @@ void displayDate(TM1638plus device, int ye, int mo, int da){
 
 void displayString(TM1638plus device,String text){
   if(text.length() <= 8){
-  for(int i = 0;i < 8;i++){
-    if(i < text.length()){
-      device.displayASCII(7 - i,text[text.length() - (i + 1)]);
-    }else{
-      device.display7Seg(7 - i,0);
+    for(int i = 0;i < 8;i++){
+      if(i < text.length()){
+        device.displayASCII(7 - i,text[text.length() - (i + 1)]);
+      }else{
+        device.display7Seg(7 - i,0);
+      }
     }
-  }
   }else{
     int start = millis()%((text.length()+8)*500)/500;
     for(int i = 0; i < 8; i++){
