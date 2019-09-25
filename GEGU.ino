@@ -207,11 +207,24 @@ void displayDate(TM1638plus device, int ye, int mo, int da){
 }
 
 void displayString(TM1638plus device,String text){
+  if(text.length() <= 8){
   for(int i = 0;i < 8;i++){
     if(i < text.length()){
       device.displayASCII(7 - i,text[text.length() - (i + 1)]);
     }else{
       device.display7Seg(7 - i,0);
+    }
+  }
+  }else{
+    int start = millis()%((text.length()+8)*500)/500;
+    for(int i = 0; i < 8; i++){
+      if(start + i < 8){
+        device.display7Seg(i,0);
+      }else if(start-8 + i >= text.length()){
+        device.display7Seg(i,0);
+      }else{
+        device.displayASCII(i,text[start-8+i]);
+      }
     }
   }
 }
