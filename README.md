@@ -1,7 +1,7 @@
-GEGU
+SmartClock
 ====
 
-2019 Birthday present for GEGU
+2019 Birthday present for my sister
 
 ## Description
 IoT device
